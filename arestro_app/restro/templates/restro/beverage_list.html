@@ -1,0 +1,27 @@
+{% block content %}
+{% include 'restro/navigation.html' %}
+	<div class="card">
+		<h5 class="card-header">Beverages List</h5>
+		<div class="card-body">
+			<div class="row">
+				<div class="card card-body">
+					<table class="table table-sm">
+						<tr>
+							<th>Name</th>
+							<th>Beverage</th>
+							<th>Price</th>
+							<th>Quantity</th>
+						</tr>
+						{% for a in beveragesItem %}
+						<tr>
+							<td>{{a.name}}</td>
+							<td>{{a.beverage}}</td>
+							<td>{{a.price}}</td>
+							<td>{{a.quantity}}</td>
+						</tr>
+					{% endfor %}
+				</table>
+			</div>
+		</div>
+	</div>
+{% endblock %}

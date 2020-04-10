@@ -1,0 +1,186 @@
+{% load static %}
+<!doctype html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>{% block title %}Restro Table Order {% endblock title %}</title>
+    <link rel="stylesheet" type="text/css" href="{% static '/css/bootstrap.css' %}">
+    {% block stylesheet %}{% endblock stylesheet %}
+</head>
+<body>
+<nav class="navbar navbar-expand-lg navbar-dark bg-secondary">
+    <a class="navbar-brand" href="#">Restro App</a>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarNav">
+      <ul class="navbar-nav">
+        <li class="nav-item active">
+          <a class="nav-link" href="/order">Order</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="/reservation">Reservation</a>
+        </li>
+      </ul>
+    </div>
+  </nav>
+<main>
+    <div class="container">
+        <h2 class="text-center">Table  Billing</h2>
+        <div class="dropdown">
+            <button type="button" class="btn btn-info dropdown-toggle" data-toggle="dropdown">View Bill</button>
+            <div class="dropdown-menu">
+                {% for i in table %}
+                <form method="get" action="{%url 'order_ajax'%}" >
+                    <input  type="hidden" value="{{i.id}}" name="table_numbers">
+                    <button type="submit" class="dropdown-item">{{i.tableName}}</button>
+                    </form>
+                {% endfor %}
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-4 ">
+                <h3 class="text-center">Add Bev Order</h3>
+                <form id="addUser" method="post" action="{%url 'placeorder'%}">
+                    {% csrf_token%}
+                    <div>
+                        <a  class="btn btn-dark text-white dropdown-toggle" data-toggle="dropdown">Select Table Number</a>
+                        <div class="dropdown-menu">
+                            {% for i in table %}
+                            <input  type="hidden" value="{{i.id}}" name="tableno">
+                            <a  class="dropdown-item">{{i.tableName}}</a>
+                            {% endfor %}
+                        </div>
+                    </div>
+                <br>
+                <div>
+                    <a class="btn btn-dark text-white dropdown-toggle" data-toggle="dropdown">Select Bev  Number</a>
+                    <div class="dropdown-menu">
+                        {% for i in beverageItem %}
+                            <input  type="hidden" value="{{i.id}}" name="beverage">
+                            <a  class="dropdown-item">{{i.name}}</a>
+                        {% endfor %}
+                    </div>
+                </div>
+                <br>
+                <div class="form-group">
+                    <input class="form-control" type="text" name="quantity" placeholder="quantity" required>
+                </div>
+                <button type="submit" class="btn btn-primary form-control" >SUBMIT</button>
+                </form>
+            </div>
+            <div class="col-md-4 ">
+                <h3 class="text-center">Add Dishes Order</h3>
+                <form id="abc" method="post" action="{%url 'placeorder'%}">
+                    {% csrf_token%}
+                    <button type="button" class="btn btn-dark text-white dropdown-toggle" data-toggle="dropdown">Select Table Number</button>
+                    <div class="dropdown-menu">
+                        {% for i in table %}
+                        <input  type="hidden" value="{{i.id}}" name="tableno">
+                        <a  class="dropdown-item">{{i.tableName}}</a>
+                        {% endfor %}
+                    </div>
+                </form>
+                <br>
+                <div>
+                    <button type="button" class="btn btn-dark text-white dropdown-toggle" data-toggle="dropdown">Select Dishes  Number</button>
+                    <div class="dropdown-menu">
+                        {% for i in dishItem %}
+                        <input  type="hidden" value="{{i.id}}" name="dishes">
+                        <a  class="dropdown-item">{{i.name}}</a>
+                        {% endfor %}
+                    </div>
+                </div>
+                <br>
+                <div class="form-group">
+                    <input class="form-control" type="text" name="quantity" placeholder="quantity" required>
+                </div>
+                <button class="btn btn-primary form-control" type="submit">SUBMIT</button>
+                </form>
+            </div>
+        </div>
+        <div class="row">
+            <h3 class="text-center">List of Orders</h3>
+            <table id="userTable" class="table table-striped">
+                <tr>
+                    <th>Item Name</th>
+                    <th>Qty</th>
+                    <th>Rate</th>
+                    <th>Total</th>
+                </tr>
+                {% if orders %}
+                {% for user in orders %}
+                <tr id="user-{{user.id}}">
+                    <td class="userItem userData" name="item">{%if user.dishes%}{{user.dishes.name}}{%else%}{{user.beverage.name}}{%endif%}</td>
+                    <td class="userQty userData" name="qty">{{user.quantity}}</td>
+                    <td class="userRate userData" name="rate">{%if user.dishes%}{{user.dishes.price}}{%else%}{{user.beverage.price}}{%endif%}</td>
+                    <td class="userTotal userData" name="total">{{user.total}}</td>
+                    <td align="center">
+                        <button class="btn btn-success form-control" onClick="editUser({{user.id}})" data-toggle="modal" data-target="#myModal")">EDIT</button>
+                    </td>
+                    <td align="center">
+                        <button class="btn btn-danger form-control" onClick="deleteUser({{user.id}})">DELETE</button>
+                    </td>
+                </tr>
+                {% endfor %}
+                {% else %}
+                No Order
+                {% endif %}
+            </table>
+        </div>
+    </div>
+    <!-- Modal -->
+    <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">×</span></button>
+                    <h4 class="modal-title" id="myModalLabel">Update Order</h4>
+                </div>
+                <form id="updateUser" action="">
+                    <div class="modal-body">
+                        <input class="form-control" id="form-id" type="hidden" name="formId"/>
+                        <label for="Item">item</label>
+                        <input class="form-control" id="form-item" type="text" name="formItem"/>
+                        <label for="Qty">qty</label>
+                        <input class="form-control" id="form-quantity" type="text" name="formQuantity"/>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="submit" class="btn btn-primary" >Save changes</button>
+                        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</main>
+<script src="https://code.jquery.com/jquery-3.1.0.min.js"></script>
+<script src='https://code.jquery.com/jquery-3.2.1.min.js'></script>
+<script src='https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js'></script>
+{% block javascript %}
+<script>
+// Delete Django Ajax Call
+function deleteUser(id) {
+  var action = confirm("Are you sure you want to delete this item?");
+  if (action != false) {
+    $.ajax({
+        url: '{% url "crud_order_delete" %}',
+        data: {
+            'id': id,
+        },
+        dataType: 'json',
+        success: function (data) {
+            if (data.deleted) {
+              $("#userTable #user-" + id).remove();
+            }
+        }
+    });
+  }
+}
+</script>
+{% endblock javascript %}
+</body>
+  <script type="text/javascript" src="{% static '/js/jquery.js' %}"></script>
+  <script type="text/javascript" src="{% static '/js/popper.js' %}"></script>
+  <script type="text/javascript" src="{% static '/js/bootstrap.js' %}"></script>
+</html>
